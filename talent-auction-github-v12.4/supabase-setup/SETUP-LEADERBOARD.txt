@@ -1,0 +1,104 @@
+TALENT AUCTION – set up the worldwide leaderboard (about 15 minutes, free)
+=========================================================================
+
+What you get
+- A public leaderboard on your website: a top 10 for each of the 9 problems, plus an Overall board
+  (average of each player's best scores, for players who have played 3 or more problems).
+- Only Human vs AI games with a new random draw count. Players type a nickname after the result.
+- Every score is checked: the server replays the whole game move by move with the game's own code.
+  If a single bid, pass or the score was changed, the score is refused.
+- Nothing is stored in the browser. The database keeps only: nickname, problem, score, AI score,
+  won/lost, captain result, seed and date.
+
+You need: the files in this "supabase-setup" folder, and your updated website (upload the new
+"talent-auction-site" files to GitHub FIRST – the server loads the game code from your site).
+
+
+STEP 1 – Create a free Supabase project
+1. Go to https://supabase.com and click "Start your project". Sign in with GitHub (easiest).
+2. Click "New project".
+   - Name: talent-auction
+   - Database password: click "Generate a password" and save it somewhere safe (you will rarely need it).
+   - Region: the one closest to your players (for India: "South Asia (Mumbai)").
+   - Plan: Free.
+3. Click "Create new project" and wait 1–2 minutes until the dashboard is ready.
+
+
+STEP 2 – Create the leaderboard table
+1. In the left menu click "SQL Editor".
+2. Click "New query" (or the + button).
+3. Open "leaderboard.sql" from this folder in Notepad / TextEdit, select everything, copy, and paste it
+   into the editor.
+4. Click "Run" (bottom right). You should see "Success. No rows returned".
+   (If Supabase asks you to confirm a "destructive operation", click "Run this query" – the file only
+   creates things and refreshes the views; it never deletes scores.)
+
+
+STEP 3 – Create the checking function
+1. In the left menu click "Edge Functions".
+2. Click "Deploy a new function" and choose "Via Editor".
+3. Delete the example code in the editor. Open "submit-score/index.ts" from this folder, copy
+   everything, and paste it in.
+4. At the bottom, set the function name to exactly:   submit-score
+5. Click "Deploy function". Wait until it says deployed.
+6. Turn OFF the JWT check (players are not logged in):
+   open the function -> "Details" (or "Settings") -> find the switch called "Verify JWT"
+   (some dashboards call it "Enforce JWT verification") -> turn it OFF -> "Save changes".
+7. Test it: on the function page copy its URL. It looks like
+      https://abcdefghijkl.supabase.co/functions/v1/submit-score
+   Paste it into a new browser tab. You should see something like
+      {"ok":true,"game":"Talent Auction", ... ,"database":true}
+   - "ok":false with "no leaderboard support yet": upload the new website files to GitHub first,
+     wait 2 minutes, try again.
+   - "database":false: see "If something goes wrong" at the bottom.
+   - Your site is NOT at https://26-rahulsaxena.github.io/talent-auction/ ? Then go to
+     Edge Functions -> Secrets, add a secret named SITE_URL with your site address, and test again.
+
+
+STEP 4 – Connect the website
+1. In Supabase click "Connect" at the top of the dashboard (or Project Settings -> API Keys).
+2. Copy two things:
+   a) the Project URL           e.g. https://abcdefghijkl.supabase.co
+   b) the PUBLIC key: the "Publishable key" (starts with sb_publishable_) or the legacy
+      "anon public" key (starts with eyJ...). Either one works.
+   NEVER copy the "secret" / "service_role" key anywhere. The function already has it.
+3. Either
+   - send both to Claude, and every future website zip will have them built in (easiest), or
+   - on github.com open your repository, click "leaderboard-config.js", click the pencil (Edit),
+     paste them between the quotes:
+        window.TA_LEADERBOARD = {
+          url: 'https://abcdefghijkl.supabase.co',
+          key: 'sb_publishable_xxxxxxxxxxxxxxxx'
+        };
+     then "Commit changes". (If you do this yourself, do not upload the empty leaderboard-config.js
+     from a later zip over it – or send the keys to Claude so they are inside the zip.)
+   Both values are safe to publish: the public key can only READ the board.
+4. Wait 1–2 minutes, open your site, press Ctrl+Shift+R (Mac: Cmd+Shift+R).
+
+
+STEP 5 – Try it
+1. Landing page -> "Worldwide leaderboard" button: the boards open (empty at first).
+2. Play Human vs AI (any company, any problem) to the result.
+3. Under the result: type a nickname -> "Post my score". You see your rank, e.g. "#1 on Product Launch".
+4. "See the leaderboard" shows the top 10 with your row highlighted.
+
+
+Looking after the board
+- See every score: Supabase -> "Table Editor" -> table "scores".
+- Remove a rude nickname: in Table Editor tick the row(s) and click Delete. Or in SQL Editor:
+     delete from public.scores where nick_key = 'the nickname in lower case';
+- Reset everything for a new season:   delete from public.scores;
+- Free projects are paused after about a week with no visits. If the board says it cannot reach the
+  leaderboard, open the Supabase dashboard and click "Restore project".
+
+
+If something goes wrong
+- The board says "The leaderboard did not answer (401)": the key in leaderboard-config.js is wrong
+  or has spaces. Copy it again.
+- "(404)": Step 2 was not run, or the URL in leaderboard-config.js is wrong.
+- Posting says "Leaderboard is not set up: the function has no database key": in Supabase go to
+  Project Settings -> API Keys, copy a SECRET key, then Edge Functions -> Secrets -> add a secret
+  named LEADERBOARD_SECRET_KEY with that value. (Only needed on some newer projects.)
+- "The game was updated since this match": the site was updated while someone was playing. Their next
+  game will post normally.
+- Posting gives a CORS or network error: make sure the JWT switch in Step 3.6 is OFF.

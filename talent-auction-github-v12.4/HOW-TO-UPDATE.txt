@@ -1,0 +1,35 @@
+TALENT AUCTION – update your GitHub site (v12.4 · mixed candidate lists, logos in the top bar, price-limit table fix, labels under the characters)
+==========================================================================================
+
+This zip has two folders:
+  talent-auction-site   the website (12 files) -> goes to GitHub
+  supabase-setup        the leaderboard server files (unchanged since v11.4) -> only needed if you
+                        have not set up the leaderboard yet
+
+PART A – update the website
+1. Unzip this file on your computer. Open the folder "talent-auction-site".
+2. Go to your repository on github.com (the one behind 26-rahulsaxena.github.io/talent-auction).
+3. Click "Add file" -> "Upload files".
+4. Select ALL files inside "talent-auction-site" (not the folder itself) and drag them onto the page.
+   leaderboard-config.js is NOT in this zip on purpose, so the Supabase URL and key you may have
+   pasted into it on GitHub stay as they are.
+5. Write a message such as "v12.4 - mixed lots and logos" and click "Commit changes".
+6. Wait 1-2 minutes (Actions tab: green tick = live), open
+   https://26-rahulsaxena.github.io/talent-auction/ and press Ctrl+Shift+R (Mac: Cmd+Shift+R).
+
+Quick check
+- Top bar on the landing page and screen saver: Talent Auction logo on the left, FIIB logo to the
+  right of the Light/Dark button.
+- Scouting page: the list is now mixed (some tempting names don't fit the problem). Specialist
+  problems may show fewer than 33 candidates.
+- After a Human vs AI game, "AI's price limits on each lot" (below the hires) now lists every lot.
+- Footer shows "v12.4 · Season 2".
+
+PART B – leaderboard (optional)
+The candidate lists changed, so scores from older versions aren't fully comparable. To start fresh:
+Supabase -> SQL Editor -> New query -> paste    delete from public.scores;    and click Run.
+Nothing else changes: the submit-score function loads the new game from your site by itself
+(allow up to 5 minutes after the GitHub update).
+
+Do NOT upload Talent_Auction_Real_Data_v4.xlsx to the public repository: its Candidate Evidence
+sheet holds the LinkedIn links, which are meant to stay private.
